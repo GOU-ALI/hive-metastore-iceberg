@@ -43,3 +43,4 @@ docker/hive-*.tar.gz
 # OS files
 .DS_Store
 Thumbs.db
+docker/*.tar.gz
