@@ -1,0 +1,13 @@
+spark_catalog:
+  target: dev
+  outputs:
+    dev:
+      type: spark
+      method: thrift
+      schema: default
+      host: spark-master
+      port: 10000
+      user: root
+      connect_timeout: 10
+      connect_retries: 5
+      retry_all: true

@@ -1,0 +1,99 @@
+services:
+
+  spark-master:
+      #image: apache/spark:3.3.3
+      build: ./spark
+      container_name: spark-master
+      environment:
+        - SPARK_MODE=master
+        - SPARK_MASTER_HOST=spark-master
+        - SPARK_MASTER_PORT=7077
+        - SPARK_MASTER_WEBUI_PORT=8080
+      ports:
+        - "8080:8080" # Spark Master UI
+        - "7077:7077" # Spark Master Port
+      volumes:
+        - ./spark/apps:/opt/spark/work-dir
+        - ./spark/jars:/jars
+      networks:
+        - hive_net
+      command: tail -f /dev/null
+  
+
+  hms-postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: changeme
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      hive_net:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hive"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  hive-metastore:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile  
+    depends_on:
+      hms-postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: hms-postgres
+      DB_PORT: 5432
+      DB_NAME: metastore
+      DB_USER: hive
+      DB_PASSWORD: changeme
+      HIVE_METASTORE_PORT: 9083
+    ports:
+      - "9083:9083"
+    networks:
+      hive_net:
+    volumes:
+      - metastore_logs:/opt/hive-metastore/logs
+    restart: unless-stopped
+
+  minio:
+      image: minio/minio
+      container_name: minio
+      environment:
+        - MINIO_ROOT_USER=admin
+        - MINIO_ROOT_PASSWORD=password
+        - MINIO_DOMAIN=minio
+      networks:
+        hive_net:
+          aliases:
+            - warehouse.minio
+      volumes:
+        - ./warehouse:/data
+      ports:
+        - 9001:9001
+        - 9000:9000
+      command: ["server", "/data", "--console-address", ":9001"]
+
+  dbt:
+    build:
+      context: ./docker/dbt
+    container_name: dbt
+    working_dir: /usr/app
+    volumes:
+      - ./dbt:/usr/app
+    environment:
+      DBT_PROFILES_DIR: /usr/app
+    depends_on:
+      - spark-master
+    networks:
+      hive_net:
+
+
+volumes:
+  postgres_data:
+  metastore_logs:
+
+networks:
+  hive_net:

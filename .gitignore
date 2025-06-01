@@ -1,0 +1,41 @@
+# DBT
+dbt/target/
+dbt/dbt_modules/
+dbt/manifest.json
+dbt/run_results.json
+dbt/logs/
+
+# Logs Spark / Hive / Docker
+spark/logs/
+hive/logs/
+*.log
+*.out
+
+
+
+# Docker
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+docker-compose.override.yml
+
+# Env & secrets
+.env
+.env.*
+
+# JARs
+**/*.jar
+docker/drivers/*.jar
+docker/**/*.jar
+opt/spark/jars/*.jar
+
+# VS Code
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db

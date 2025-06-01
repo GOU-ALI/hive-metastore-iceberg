@@ -1,0 +1,9 @@
+name: iceberg_dbt_project
+version: "1.0"
+profile: spark_catalog
+
+model-paths: ["models"]
+
+models:
+  iceberg_dbt_project:
+    +materialized: view
