@@ -30,6 +30,10 @@ docker/drivers/*.jar
 docker/**/*.jar
 opt/spark/jars/*.jar
 
+docker/hadoop-*.tar.gz
+docker/hive-*.tar.gz
+*.jar
+
 # VS Code
 .vscode/
 
